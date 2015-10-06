@@ -313,7 +313,7 @@ class WaveformViewModel(VispyViewModel):
     _view_class = WaveformView
     _view_name = 'waveforms'
     _imported_params = ('scale_factor', 'box_scale', 'probe_scale',
-                        'overlap', 'show_mean')
+                        'overlap', 'show_mean', 'show_template')
 
     def on_open(self):
         """Initialize the view when the model is opened."""
@@ -324,6 +324,10 @@ class WaveformViewModel(VispyViewModel):
         # Mean waveforms.
         self.view.mean.channel_positions = self.model.probe.positions
         self.view.mean.channel_order = self.model.channel_order
+
+        self.view.template.channel_positions = self.model.probe.positions
+        self.view.template.channel_order = self.model.channel_order
+
         if self.scale_factor is None:
             self.scale_factor = 1.
 
@@ -440,6 +444,15 @@ class WaveformViewModel(VispyViewModel):
     def show_mean(self, value):
         self.view.show_mean = value
 
+    @property
+    def show_template(self):
+        """Whether to show template waveforms."""
+        return self.view.show_template
+
+    @show_template.setter
+    def show_template(self, value):
+        self.view.show_template = value
+
     def exported_params(self, save_size_pos=True):
         """Parameters to save automatically when the view is closed."""
         params = super(WaveformViewModel, self).exported_params(save_size_pos)
@@ -449,6 +462,7 @@ class WaveformViewModel(VispyViewModel):
             'probe_scale': self.view.probe_scale,
             'overlap': self.view.overlap,
             'show_mean': self.view.show_mean,
+            'show_template': self.view.show_template,
         })
         return params
 

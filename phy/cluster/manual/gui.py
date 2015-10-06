@@ -248,7 +248,9 @@ class ClusterManualGUI(BaseGUI):
                        # Views.
                        'toggle_correlogram_normalization',
                        'toggle_waveforms_mean',
+                       'toggle_waveforms_template',
                        'toggle_waveforms_overlap',
+                       'toggle_traces_all_spikes'
                        'show_features_time',
                        ]:
             self._add_gui_shortcut(action)
@@ -441,10 +443,20 @@ class ClusterManualGUI(BaseGUI):
         for vm in self.get_views('waveforms'):
             vm.show_mean = not(vm.show_mean)
 
+    def toggle_waveforms_template(self):
+        """Toggle template display in the waveform views."""
+        for vm in self.get_views('waveforms'):
+            vm.show_template = not(vm.show_template)
+
     def toggle_waveforms_overlap(self):
         """Toggle cluster overlap in the waveform views."""
         for vm in self.get_views('waveforms'):
             vm.overlap = not(vm.overlap)
+
+    def toggle_traces_all_spikes(self):
+        """Toggle show/hide all spikes in the trace views."""
+        for vm in self.get_views('waveforms'):
+            vm.all_spikes = not(vm.all_spikes)
 
     def show_features_time(self):
         """Set the x dimension to time in all feature views."""

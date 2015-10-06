@@ -245,16 +245,20 @@ class WaveformView(BaseSpikeCanvas):
     _events = ('channel_click',)
     _key_pressed = None
     _show_mean = False
+    _show_template = False
 
     def _create_visuals(self):
         super(WaveformView, self)._create_visuals()
         self.mean = WaveformVisual()
+        self.template = WaveformVisual()
         self.mean.alpha = 1.
+        self.template.alpha = 1.
 
     def _create_pan_zoom(self):
         self._pz = PanZoom()
         self._pz.add(self.visual.program)
         self._pz.add(self.mean.program)
+        self._pz.add(self.template.program)
         self._pz.attach(self)
 
     def set_data(self,
@@ -331,6 +335,7 @@ class WaveformView(BaseSpikeCanvas):
     def box_scale(self, value):
         self.visual.box_scale = value
         self.mean.box_scale = value
+        self.template.box_scale = value
         self.update()
 
     @property
@@ -346,6 +351,7 @@ class WaveformView(BaseSpikeCanvas):
     def probe_scale(self, value):
         self.visual.probe_scale = value
         self.mean.probe_scale = value
+        self.template.probe_scale = value
         self.update()
 
     @property
@@ -357,6 +363,7 @@ class WaveformView(BaseSpikeCanvas):
     def alpha(self, value):
         self.visual.alpha = value
         self.mean.alpha = value
+        self.template.alpha = value
         self.update()
 
     @property
@@ -368,16 +375,27 @@ class WaveformView(BaseSpikeCanvas):
     def overlap(self, value):
         self.visual.overlap = value
         self.mean.overlap = value
+        self.template.overlap = value
         self.update()
 
     @property
     def show_mean(self):
-        """Whether to show_mean waveforms."""
+        """Whether to show mean waveforms."""
         return self._show_mean
 
     @show_mean.setter
     def show_mean(self, value):
         self._show_mean = value
+        self.update()
+
+    @property
+    def show_template(self):
+        """Whether to show template waveforms."""
+        return self._show_template
+
+    @show_template.setter
+    def show_template(self, value):
+        self._show_template = value
         self.update()
 
     keyboard_shortcuts = {
@@ -482,6 +500,8 @@ class WaveformView(BaseSpikeCanvas):
         gloo.clear(color=True, depth=True)
         if self._show_mean:
             self.mean.draw()
+        elif self._show_template:
+            self.template.draw()
         else:
             self.visual.draw()
 

@@ -84,6 +84,8 @@ cluster_manual_shortcuts = {
     'toggle_correlogram_normalization': 'n',
     'toggle_waveforms_overlap': 'o',
     'toggle_waveforms_mean': 'm',
+    'toggle_waveforms_template': 'l',
+    'toggle_traces_all_spikes': 's',
     'show_features_time': 't',
 }
 

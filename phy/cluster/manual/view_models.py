@@ -349,11 +349,22 @@ class WaveformViewModel(VispyViewModel):
                                      )
         return mean_waveforms, mean_masks
 
+    def _load_template_waveforms(self):
+        template_waveforms = self.store.load('template_waveforms',
+                                             clusters=self.cluster_ids,
+                                             )
+        template_masks = self.store.load('template_masks',
+                                         clusters=self.cluster_ids,
+                                         )
+        return template_waveforms, template_masks
+
     def update_spike_clusters(self, spikes=None):
         """Update the view's spike clusters."""
         super(WaveformViewModel, self).update_spike_clusters(spikes=spikes)
         self._view.mean.spike_clusters = np.sort(self.cluster_ids)
         self._view.mean.cluster_colors = self._view.visual.cluster_colors
+        self._view.template.spike_clusters = np.sort(self.cluster_ids)
+        self._view.template.cluster_colors = self._view.visual.cluster_colors
 
     def on_select(self, clusters, **kwargs):
         """Update the view when the selection changes."""
@@ -364,12 +375,14 @@ class WaveformViewModel(VispyViewModel):
         n_spikes = len(spikes)
         _, self._n_samples, self._n_channels = waveforms.shape
         mean_waveforms, mean_masks = self._load_mean_waveforms()
+        template_waveforms, template_masks = self._load_template_waveforms()
 
         self.update_spike_clusters(spikes)
 
         # Cluster display order.
         self.view.visual.cluster_order = clusters
         self.view.mean.cluster_order = clusters
+        self.view.template.cluster_order = clusters
 
         # Waveforms.
         assert waveforms.shape[0] == n_spikes
@@ -380,6 +393,11 @@ class WaveformViewModel(VispyViewModel):
                                         self._n_channels)
         self.view.mean.waveforms = mean_waveforms * self.scale_factor
 
+        assert template_waveforms.shape == (n_clusters,
+                                            self._n_samples,
+                                            self._n_channels)
+        self.view.template.waveforms = template_waveforms * self.scale_factor
+
         # Masks.
         masks = self.store.load('masks', clusters=clusters, spikes=spikes)
         assert masks.shape == (n_spikes, self._n_channels)
@@ -388,9 +406,13 @@ class WaveformViewModel(VispyViewModel):
         assert mean_masks.shape == (n_clusters, self._n_channels)
         self.view.mean.masks = mean_masks
 
+        assert template_masks.shape == (n_clusters, self._n_channels)
+        self.view.template.masks = template_masks
+
         # Spikes.
         self.view.visual.spike_ids = spikes
         self.view.mean.spike_ids = np.arange(len(clusters))
+        self.view.template.spike_ids = np.arange(len(clusters))
 
         self.view.update()
 
@@ -398,6 +420,8 @@ class WaveformViewModel(VispyViewModel):
         """Clear the view when the model is closed."""
         self.view.visual.channel_positions = []
         self.view.mean.channel_positions = []
+        self.view.template.channel_positions = []
+
         super(WaveformViewModel, self).on_close()
 
     @property

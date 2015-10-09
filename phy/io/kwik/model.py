@@ -316,6 +316,8 @@ class KwikModel(BaseModel):
         self._channel_order = None
         self._features = None
         self._features_masks = None
+        self._template_waveforms = {}
+        self._template_masks = {}
         self._masks = None
         self._waveforms = None
         self._cluster_metadata = None
@@ -523,6 +525,18 @@ class KwikModel(BaseModel):
             # This partial array simulates a (n_spikes, n_channels) array.
             self._masks = PartialArray(fm, (slice(0, nfpc * nc, nfpc), 1))
             assert self._masks.shape == (self.n_spikes, nc)
+
+    def _load_template_waveforms_masks(self):
+        clusters = self._kwik.groups(self._clustering_path)
+        clusters = [int(cluster) for cluster in clusters]
+
+        for cluster in clusters:
+            path = self._cluster_path(cluster)
+            waveform = self._kwik.read_attr(path, 'template_waveform')
+            mask = self._kwik.read_attr(path, 'template_mask')
+
+            self._template_waveforms[cluster] = waveform
+            self._template_masks[cluster] = mask
 
     def _load_spikes(self):
         # Load spike samples.
@@ -803,6 +817,7 @@ class KwikModel(BaseModel):
         self._create_cluster_metadata()
         self._load_spike_clusters()
         self._load_cluster_groups()
+        self._load_template_waveforms_masks()
         self._load_clustering_metadata()
         if _to_close:
             self._kwik.close()
@@ -1146,6 +1161,28 @@ class KwikModel(BaseModel):
 
         """
         return SpikeLoader(self._waveform_loader, self.spike_samples)
+
+    @property
+    def template_waveforms(self):
+        """Template waveforms for the current clustering.
+
+        If they do not exist, returns None.
+
+        The shape is `(n_clusters, n_samples, n_channels)`.
+
+        """
+        return self._template_waveforms
+
+    @property
+    def template_masks(self):
+        """Template masks for the current clustering.
+
+        If they do not exist, returns None.
+
+        The shape is `(n_clusters, n_channels)`.
+
+        """
+        return self._template_masks
 
     @property
     def spike_clusters(self):

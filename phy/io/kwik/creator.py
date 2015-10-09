@@ -332,6 +332,8 @@ class KwikCreator(object):
                        name=None,
                        spike_clusters=None,
                        cluster_groups=None,
+                       template_waveforms=None,
+                       template_masks=None,
                        ):
         """Add a clustering.
 
@@ -343,9 +345,14 @@ class KwikCreator(object):
         name : str
             The clustering name.
         spike_clusters : ndarray
-            The spike clusters assignements. This is `(n_spikes,)` array.
+            The spike cluster assignments. This is a `(n_spikes,)` array.
         cluster_groups : dict
             The cluster group of every cluster.
+        template_waveforms : ndarray
+            A `(n_clusters, n_samples, n_channels)` array of template
+            waveforms.
+        template_masks : ndarray
+            A `(n_clusters, n_channels)` array of integer template masks.
 
         """
         if cluster_groups is None:
@@ -369,6 +376,14 @@ class KwikCreator(object):
                 # Default group: unsorted.
                 cluster_group = cluster_groups.get(cluster, 3)
                 f.write_attr(cluster_path, 'cluster_group', cluster_group)
+
+                # Write template waveforms if they exist
+                if template_waveforms is not None:
+                    template_waveform = template_waveforms[cluster, ...]
+                    template_mask = template_masks[cluster, ...]
+                    f.write_attr(cluster_path, 'template_waveform',
+                                 template_waveform)
+                    f.write_attr(cluster_path, 'template_mask', template_mask)
 
             # Create cluster group metadata.
             for group_id, cg_name in _DEFAULT_GROUPS:

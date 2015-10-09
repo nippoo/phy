@@ -349,13 +349,15 @@ class WaveformViewModel(VispyViewModel):
                                      )
         return mean_waveforms, mean_masks
 
-    def _load_template_waveforms(self):
-        template_waveforms = self.store.load('template_waveforms',
-                                             clusters=self.cluster_ids,
-                                             )
-        template_masks = self.store.load('template_masks',
-                                         clusters=self.cluster_ids,
-                                         )
+    def _load_templates(self, clusters):
+        template_waveforms = \
+            np.array([self.model.template_waveforms[i] for i in clusters])
+
+        template_masks = \
+            np.array([self.model.template_masks[i] for i in clusters])
+
+        template_waveforms = template_waveforms[:, :self._n_samples, :]
+
         return template_waveforms, template_masks
 
     def update_spike_clusters(self, spikes=None):
@@ -375,7 +377,7 @@ class WaveformViewModel(VispyViewModel):
         n_spikes = len(spikes)
         _, self._n_samples, self._n_channels = waveforms.shape
         mean_waveforms, mean_masks = self._load_mean_waveforms()
-        template_waveforms, template_masks = self._load_template_waveforms()
+        template_waveforms, template_masks = self._load_templates(clusters)
 
         self.update_spike_clusters(spikes)
 
@@ -396,6 +398,7 @@ class WaveformViewModel(VispyViewModel):
         assert template_waveforms.shape == (n_clusters,
                                             self._n_samples,
                                             self._n_channels)
+
         self.view.template.waveforms = template_waveforms * self.scale_factor
 
         # Masks.

@@ -356,7 +356,14 @@ class WaveformViewModel(VispyViewModel):
         template_masks = \
             np.array([self.model.template_masks[i] for i in clusters])
 
-        template_waveforms = template_waveforms[:, :self._n_samples, :]
+        if(template_waveforms.shape[1] > self._n_samples):
+            # The template is longer than the extracted waveform,
+            # so we trim it.
+            trimlength = (template_waveforms.shape[1] - self._n_samples) // 2
+            template_waveforms = \
+                template_waveforms[:,
+                                   trimlength:(trimlength + self._n_samples),
+                                   :]
 
         return template_waveforms, template_masks
 

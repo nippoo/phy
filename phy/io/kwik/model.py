@@ -318,6 +318,7 @@ class KwikModel(BaseModel):
         self._features_masks = None
         self._template_waveforms = {}
         self._template_masks = {}
+        self._template_amplitudes = {}
         self._masks = None
         self._waveforms = None
         self._cluster_metadata = None
@@ -526,7 +527,7 @@ class KwikModel(BaseModel):
             self._masks = PartialArray(fm, (slice(0, nfpc * nc, nfpc), 1))
             assert self._masks.shape == (self.n_spikes, nc)
 
-    def _load_template_waveforms_masks(self):
+    def _load_templates(self):
         clusters = self._kwik.groups(self._clustering_path)
         clusters = [int(cluster) for cluster in clusters]
 
@@ -534,9 +535,11 @@ class KwikModel(BaseModel):
             path = self._cluster_path(cluster)
             waveform = self._kwik.read_attr(path, 'template_waveform')
             mask = self._kwik.read_attr(path, 'template_mask')
+            amplitude = self._kwik.read_attr(path, 'template_amplitudes')
 
             self._template_waveforms[cluster] = waveform
             self._template_masks[cluster] = mask
+            self._template_amplitudes[cluster] = amplitude
 
     def _load_spikes(self):
         # Load spike samples.
@@ -838,7 +841,7 @@ class KwikModel(BaseModel):
         self._create_cluster_metadata()
         self._load_spike_clusters()
         self._load_cluster_groups()
-        self._load_template_waveforms_masks()
+        self._load_templates()
         self._load_clustering_metadata()
         if _to_close:
             self._kwik.close()
@@ -1204,6 +1207,17 @@ class KwikModel(BaseModel):
 
         """
         return self._template_masks
+
+    @property
+    def template_amplitudes(self):
+        """Template amplitudes for the current clustering.
+
+        If they do not exist, returns None.
+
+        This is a dict returning a `(n_spikes,)` array of floats per cluster.
+
+        """
+        return self._template_amplitudes
 
     @property
     def spike_clusters(self):

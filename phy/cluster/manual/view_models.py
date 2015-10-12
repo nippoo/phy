@@ -406,7 +406,8 @@ class WaveformViewModel(VispyViewModel):
                                             self._n_samples,
                                             self._n_channels)
 
-        self.view.template.waveforms = template_waveforms * self.scale_factor
+        self.view.template.waveforms = \
+            template_waveforms * self.scale_factor * 15
 
         # Masks.
         masks = self.store.load('masks', clusters=clusters, spikes=spikes)

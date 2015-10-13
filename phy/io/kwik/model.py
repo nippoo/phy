@@ -318,7 +318,7 @@ class KwikModel(BaseModel):
         self._features_masks = None
         self._template_waveforms = {}
         self._template_masks = {}
-        self._template_amplitudes = {}
+        self._template_amplitudes = None
         self._masks = None
         self._waveforms = None
         self._cluster_metadata = None
@@ -371,6 +371,10 @@ class KwikModel(BaseModel):
     def _spike_clusters_path(self):
         return '{0:s}/clusters/{1:s}'.format(self._spikes_path,
                                              self._clustering)
+    @property
+    def _template_amplitudes_path(self):
+        return '{0:s}/template_amplitudes/{1:s}'.format(self._spikes_path,
+                                                        self._clustering)
 
     @property
     def _clustering_path(self):
@@ -531,15 +535,16 @@ class KwikModel(BaseModel):
         clusters = self._kwik.groups(self._clustering_path)
         clusters = [int(cluster) for cluster in clusters]
 
+        self._template_amplitudes = \
+            self._kwik.read(self._template_amplitudes_path)[:]
+
         for cluster in clusters:
             path = self._cluster_path(cluster)
             waveform = self._kwik.read_attr(path, 'template_waveform')
             mask = self._kwik.read_attr(path, 'template_mask')
-            amplitude = self._kwik.read_attr(path, 'template_amplitudes')
 
             self._template_waveforms[cluster] = waveform
             self._template_masks[cluster] = mask
-            self._template_amplitudes[cluster] = amplitude
 
     def _load_spikes(self):
         # Load spike samples.
@@ -1214,7 +1219,7 @@ class KwikModel(BaseModel):
 
         If they do not exist, returns None.
 
-        This is a dict returning a `(n_spikes,)` array of floats per cluster.
+        This returns an `(n_spikes,)` array of floats.
 
         """
         return self._template_amplitudes

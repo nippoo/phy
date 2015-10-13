@@ -354,6 +354,8 @@ class KwikCreator(object):
             waveforms.
         template_masks : ndarray
             A `(n_clusters, n_channels)` array of integer template masks.
+        template_amplitudes : ndarray
+            A `(n_spikes,)` array of float template amplitudes.
 
         """
         if cluster_groups is None:
@@ -382,12 +384,23 @@ class KwikCreator(object):
                 if template_waveforms is not None:
                     template_waveform = template_waveforms[cluster, ...]
                     template_mask = template_masks[cluster, ...]
-                    template_amplitude = template_amplitudes[cluster]
 
                     f.write_attr(cluster_path, 'template_waveform',
                                  template_waveform)
                     f.write_attr(cluster_path, 'template_mask', template_mask)
-                    f.write_attr(cluster_path, 'template_amplitudes', template_amplitude)
+
+            # If template waveforms exist, set a flag for the loader and write
+            # amplitudes.
+            clustering_path = '/channel_groups/{0:d}/clusters/{1:s}'. \
+                format(group, name)
+            amplitudes_path = \
+                '/channel_groups/{0:d}/spikes/template_amplitudes/{1:s}'. \
+                format(group, name)
+
+            if template_waveforms is not None:
+                f.write_attr(cluster_path, 'clustering_algorithm', 'template')
+                ta = template_amplitudes.astype(np.float32).ravel()
+                f.write(amplitudes_path, ta)
 
             # Create cluster group metadata.
             for group_id, cg_name in _DEFAULT_GROUPS:
@@ -397,11 +410,6 @@ class KwikCreator(object):
                                        group=group,
                                        )
 
-            # If template waveforms exist, set a flag for the loader
-            clustering_path = '/channel_groups/{0:d}/clusters/{1:s}'. \
-                    format(group, name)
-            if template_waveforms is not None:
-                f.write_attr(cluster_path, 'clustering_algorithm', 'template')
 
 
 def create_kwik(prm_file=None, kwik_path=None, overwrite=False,

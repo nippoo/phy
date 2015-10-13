@@ -351,10 +351,10 @@ class WaveformViewModel(VispyViewModel):
 
     def _load_templates(self, clusters):
         template_waveforms = \
-            np.array([self.model.template_waveforms[i] for i in clusters])
+            np.array([self.model.template_waveforms[k] for k in clusters])
 
         template_masks = \
-            np.array([self.model.template_masks[i] for i in clusters])
+            np.array([self.model.template_masks[k] for k in clusters])
 
         if(template_waveforms.shape[1] > self._n_samples):
             # The template is longer than the extracted waveform,
@@ -936,7 +936,7 @@ class BaseFeatureViewModel(VispyViewModel):
             dim = self.view.smart_dimension(axis, box, dim)
         self.view.set_dimensions(axis, {box: dim})
 
-    def add_extra_feature(self, name, array):
+    def add_extra_feature(self, name, array, normalization=None):
         """Add an extra feature.
 
         Parameters
@@ -946,15 +946,29 @@ class BaseFeatureViewModel(VispyViewModel):
             The feature's name.
         array : ndarray
             A `(n_spikes,)` array with the feature's value for every spike.
+        normalization : tuple
+            A forced (min, max) normalization tuple. This must normalise the
+            features to (-1., 1.) at most.
 
         """
         assert isinstance(name, string_types)
+
         array = _as_array(array)
         n_spikes = self.model.n_spikes
         if array.shape != (n_spikes,):
             raise ValueError("The extra feature needs to be a 1D vector with "
                              "`n_spikes={}` values.".format(n_spikes))
-        self._extra_features[name] = (array, array.min(), array.max())
+
+        if isinstance(normalization, tuple):
+            norm_min, norm_max = normalization
+
+            if((norm_min > array.min()) or (norm_max < array.max())):
+                raise ValueError("`normalization` must normalise the "
+                                 "features to (-1., 1.) at most.")
+            else:
+                self._extra_features[name] = (array, norm_min, norm_max)
+        else:
+            self._extra_features[name] = (array, array.min(), array.max())
 
     def _subset_extra_features(self, spikes):
         return {name: (array[spikes], m, M)
@@ -998,6 +1012,13 @@ class BaseFeatureViewModel(VispyViewModel):
             self.view.background.spike_ids = self.model.spike_ids[::k]
         # Register the time dimension.
         self.add_extra_feature('time', self.model.spike_samples)
+
+        # Register the template amplitudes.
+        ta = self.model.template_amplitudes
+
+        self.add_extra_feature('template_amplitudes', ta,
+                               normalization=(-ta.max(), ta.max()))
+
         # Add the subset extra features to the visuals.
         self._add_extra_features_in_view(slice(None, None, k))
         # Number of rows: number of features + 1 for

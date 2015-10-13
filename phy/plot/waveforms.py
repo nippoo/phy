@@ -498,10 +498,10 @@ class WaveformView(BaseSpikeCanvas):
     def on_draw(self, event):
         """Draw the visual."""
         gloo.clear(color=True, depth=True)
-        if self._show_mean:
-            self.mean.draw()
-        elif self._show_template:
+        if self._show_template:
             self.template.draw()
+        elif self._show_mean:
+            self.mean.draw()
         else:
             self.visual.draw()
 

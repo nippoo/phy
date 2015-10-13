@@ -170,7 +170,8 @@ class KwikCreator(object):
         """
         assert group >= 0
         assert n_channels >= 0
-        assert n_features >= 0
+        if features:
+            assert n_features >= 0
 
         if spike_samples is None:
             return

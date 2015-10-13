@@ -1009,7 +1009,9 @@ class BaseFeatureViewModel(VispyViewModel):
             features_bg = self.store.load('features',
                                           spikes=slice(None, None, k))
             self.view.background.features = self._rescale_features(features_bg)
-            self.view.background.spike_ids = self.model.spike_ids[::k]
+
+        self.view.background.spike_ids = self.model.spike_ids[::k]
+
         # Register the time dimension.
         self.add_extra_feature('time', self.model.spike_samples)
 
@@ -1026,6 +1028,10 @@ class BaseFeatureViewModel(VispyViewModel):
 
     def on_select(self, clusters, auto_update=True):
         """Update the view when the selection changes."""
+
+        if not self.model.features:
+            auto_update = False
+
         super(BaseFeatureViewModel, self).on_select(clusters)
         spikes = self.spike_ids
 
@@ -1098,7 +1104,10 @@ class FeatureGridViewModel(BaseFeatureViewModel):
     @property
     def n_rows(self):
         """Number of rows in the grid view."""
-        return self.n_features + 1
+        if self.n_features:
+            return self.n_features + 1
+        else:
+            return 1
 
     def dimensions_for_clusters(self, cluster_ids):
         """Return the x and y dimensions most appropriate for the set of

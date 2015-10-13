@@ -390,6 +390,9 @@ class FeatureView(BaseSpikeCanvas):
         This function *must* be called before setting the attributes.
 
         """
+        if not n_rows:
+            return
+
         assert n_rows >= 0
 
         x_dim = np.empty((n_rows, n_rows), dtype=object)

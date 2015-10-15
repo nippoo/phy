@@ -663,8 +663,11 @@ class TraceViewModel(VispyViewModel):
 
         # Load the masks.
         # TODO: ensure model.masks is always 2D, even with 1 spike
-        masks = np.atleast_2d(self._model.masks[spikes])
-        self.view.visual.masks = masks
+        if self._model.masks:
+            masks = np.atleast_2d(self._model.masks[spikes])
+            self.view.visual.masks = masks
+        else:
+            self.view.visual.masks = None
 
     @property
     def interval(self):

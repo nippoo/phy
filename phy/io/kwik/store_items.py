@@ -184,6 +184,9 @@ class FeatureMasks(VariableSizeItem):
             self._pr.value_max = self.n_chunks + 1
 
             fm = self.model.features_masks
+            if not fm:
+                return
+
             assert fm.shape[0] == self.n_spikes
 
             for i in range(self.n_chunks):

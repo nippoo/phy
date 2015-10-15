@@ -667,8 +667,8 @@ class TraceViewModel(VispyViewModel):
             masks = np.atleast_2d(self._model.masks[spikes])
             self.view.visual.masks = masks
         else:
-            self.view.visual.masks = np.empty(self.model.n_spikes,
-                                                self.model.n_channels)
+            self.view.visual.masks = np.empty([self.model.n_spikes,
+                                              self.model.n_channels])
 
     @property
     def interval(self):

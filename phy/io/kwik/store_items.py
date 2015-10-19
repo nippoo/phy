@@ -184,6 +184,7 @@ class FeatureMasks(VariableSizeItem):
             self._pr.value_max = self.n_chunks + 1
 
             fm = self.model.features_masks
+
             if not fm:
                 return
 
@@ -568,8 +569,13 @@ class ClusterStatistics(FixedSizeItem):
     def _load_mean(self, cluster, name):
         if self.disk_store:
             # Load from the disk store if possible.
-            return self.disk_store.load(cluster, name, np.float32,
+            item = self.disk_store.load(cluster, name, np.float32,
                                         self._shapes[name][1:])
+            if item is None and name == 'mean_masks':
+                # Masks don't exist if this is a template matching dataset.
+                item = self.model.template_masks[cluster]
+
+            return item
         else:
             # Otherwise compute the mean directly from the model.
             item_name = ('waveforms'

@@ -666,9 +666,9 @@ class TraceViewModel(VispyViewModel):
         if self._model.masks:
             masks = np.atleast_2d(self._model.masks[spikes])
             self.view.visual.masks = masks
-        else:
-            self.view.visual.masks = np.empty([self.model.n_spikes,
-                                              self.model.n_channels])
+        elif self._model.template_masks:
+            self.view.visual.masks = np.array([self._model.template_masks[i] \
+                for i in self._model.spike_clusters[spikes]])
 
     @property
     def interval(self):
